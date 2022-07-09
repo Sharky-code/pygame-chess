@@ -49,13 +49,6 @@ chessStorage = [
         ['whitepawn', [6, 6], True, True],
         ['whitepawn', [7, 6], True, True],
         ]
-#This below is used for testing
-chessStorage = [
-        ['blackrook', [3, 5], True],
-        ['blackrook', [2, 2], True],
-        ['whiterook', [4, 4], True],
-        ['whiterook', [3, 3], True],
-        ]
 pygame.init()
 screen = pygame.display.set_mode((width,height))
 pygame.display.set_caption('Chess')
@@ -162,6 +155,9 @@ class MovePieces:
                             del chessStorage[[z[1] for z in chessStorage].index([x, y])]
 
                         chessStorage[[z[1] for z in chessStorage].index(self.samePieceClick)][1] = [x, y]
+
+                    #change the turn
+                    self.turn = "black" if self.turn == "white" else "white"
                         
                     self.samePieceClick = None
                     self.pressed = False
@@ -198,9 +194,6 @@ class MovePieces:
                     #change turn
                     self.turn = "black" if self.turn == "white" else "white"
 
-                elif [x, y] == self.samePieceClick:
-                    self.samePieceClick = None
-
             elif None not in [x, y] and self.dragModeCoord != None and [x, y] == self.dragModeCoord:
                 #if self.samePieceClick == None and [x, y] == self.dragModeCoord:
                 self.samePieceClick = [x, y]
@@ -211,6 +204,8 @@ class MovePieces:
             #make the object reappear in drag mode
             if self.dragModeCoord in [z[1] for z in chessStorage]:
                 chessStorage[[z[1] for z in chessStorage].index(self.dragModeCoord)][2] = True
+                if self.samePieceClick == None:
+                    self.selectedChessPieceLegalMoves = None
             
             #reset data for next time
             self.dragModeCoord = self.dragModeName = self.dragModeInfo = None
@@ -237,16 +232,12 @@ class MovePieces:
 
     def availableSpots(self, chessPiecePos):
         chessPieceName = chessStorage[[z[1] for z in chessStorage].index(chessPiecePos)][0][5:]
-        chessPieceSide = chessStorage[[z[1] for z in chessStorage].index(chessPiecePos)][0][:5]
         finalList = []
 
         if chessPieceName == "rook":
             [x, y] = chessPiecePos
-            directions = [x, y, 8 - x, 8 - y]
-            print(directions)
-            for a, b in enumerate(directions):
+            for a in range(4): #4 directions that it will have to create
                 for c in range(1, 8): # the range is 8 because the chess board can only go 8 at most anyways so you don't have to limit the stuff and add so much logic
-                    print("a, b, c", a, b, c)
                     trail = [[x - c, y], [x, y - c], [x + c, y], [x, y + c]]
                     if trail[a] in [z[1] for z in chessStorage]:
                         if chessStorage[[z[1] for z in chessStorage].index(trail[a])][0][:5] != self.turn:
@@ -254,6 +245,65 @@ class MovePieces:
                         break
                     else:
                         finalList.append(trail[a])
+
+        if chessPieceName == "bishop":
+            [x, y] = chessPiecePos
+            for a in range(4): #4 directions that it will have to create
+                for c in range(1, 8):
+                    trail = [[x - c, y - c], [x + c, y - c], [x + c, y + c], [x - c , y + c]]
+                    if trail[a] in [z[1] for z in chessStorage]:
+                        if chessStorage[[z[1] for z in chessStorage].index(trail[a])][0][:5] != self.turn:
+                            finalList.append(trail[a])
+                        break
+                    else:
+                        finalList.append(trail[a])
+
+        if chessPieceName == "queen":
+            [x, y] = chessPiecePos
+            for a in range(8): #8 directions that it will have to create (diagonal and leftrightupdown)
+                for c in range(1, 8):
+                    trail = [[x - c, y - c], [x + c, y - c], [x + c, y + c], [x - c , y + c], [x - c, y], [x, y - c], [x + c, y], [x, y + c]]
+                    if trail[a] in [z[1] for z in chessStorage]:
+                        if chessStorage[[z[1] for z in chessStorage].index(trail[a])][0][:5] != self.turn:
+                            finalList.append(trail[a])
+                        break
+                    else:
+                        finalList.append(trail[a])
+
+        if chessPieceName == "knight":
+            [x, y] = chessPiecePos
+            trail = [[x + 2, y + 1], [x + 2, y - 1], [x - 2, y + 1], [x - 2, y - 1], [x + 1, y + 2], [x - 1, y + 2], [x + 1, y - 2], [x - 1, y - 2]]
+            for a in range(8): #for this time, you can't use the same method, because it doesn't move in a line.
+                if trail[a] in [z[1] for z in chessStorage]:
+                    if chessStorage[[z[1] for z in chessStorage].index(trail[a])][0][:5] != self.turn:
+                        finalList.append(trail[a])
+                else:
+                    finalList.append(trail[a])
+
+        if chessPieceName == "king":
+            [x, y] = chessPiecePos
+            trail = [[x, y + 1], [x + 1, y + 1], [x + 1, y], [x + 1, y - 1], [x, y - 1], [x - 1, y - 1], [x - 1, y], [x - 1, y + 1]]
+            for a in range(8): #for this time, you can't use the same method, because it doesn't move in a line.
+                if trail[a] in [z[1] for z in chessStorage]:
+                    if chessStorage[[z[1] for z in chessStorage].index(trail[a])][0][:5] != self.turn:
+                        finalList.append(trail[a])
+                else:
+                    finalList.append(trail[a])
+
+        #PAWN IS UNTESTED. IT IS MOST LIKELY NOT GOING TO WORK. THE REASON I UPLOADED IT HERE IS BECAUSE I RAN OUT OF TIME DOING PAWN
+        if chessPieceName == "pawn":
+            #pawn is special because it attacks diagonally but it moves 1/2 times forward first time then 1 time forward
+            [x, y] = chessPiecePos
+            pawnPieceTeam = chessStorage[[z[1] for z in chessStorage].index(chessPiecePos)][0][:5]
+
+            twoStepYet = chessStorage[[z[1] for z in chessStorage].index(chessPiecePos)][3]
+            trail = {"white" : [[x, y - 1], [x, y - 2]], "black" : [[x, y + 1], [x, y + 2]]}[ chessStorage[[z[1] for z in chessStorage].index(chessPiecePos)][0][:5]]
+            for a in range(2 if twoStepYet else 1):
+                finalList.append(a)
+            
+            detectEnemy = {"white" : [[x - 1, y - 1], [x + 1, y - 1]], "black": [[x - 1, y + 1], [x + 1, y + 1]]}[pawnPieceTeam]
+            if detectEnemy in [z[1] for z in chessStorage]:
+                finalList.append(detectEnemy)
 
         self.selectedChessPieceLegalMoves = finalList
         return finalList
