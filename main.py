@@ -154,6 +154,8 @@ class MovePieces:
                         if [x, y] in [z[1] for z in chessStorage] and len(chessStorage[[z[1] for z in chessStorage].index([x, y])]):
                             del chessStorage[[z[1] for z in chessStorage].index([x, y])]
 
+                        if len(chessStorage[[z[1] for z in chessStorage].index(self.samePieceClick)]) == 4:
+                            chessStorage[[z[1] for z in chessStorage].index(self.samePieceClick)][3] = False
                         chessStorage[[z[1] for z in chessStorage].index(self.samePieceClick)][1] = [x, y]
 
                     #change the turn
@@ -185,6 +187,8 @@ class MovePieces:
                     if [x, y] in [z[1] for z in chessStorage] and len(chessStorage[[z[1] for z in chessStorage].index([x, y])]):
                         del chessStorage[[z[1] for z in chessStorage].index([x, y])]
 
+                    if len(chessStorage[[z[1] for z in chessStorage].index(self.dragModeCoord)]) == 4:
+                        chessStorage[[z[1] for z in chessStorage].index(self.dragModeCoord)][3] = False
                     #change the location of the selected chess piece if it is in a different place or not outside the chess board
                     chessStorage[[z[1] for z in chessStorage].index(self.dragModeCoord)][1] = [x, y]
                     self.dragModeCoord = [x, y]
@@ -298,10 +302,18 @@ class MovePieces:
 
             twoStepYet = chessStorage[[z[1] for z in chessStorage].index(chessPiecePos)][3]
             trail = {"white" : [[x, y - 1], [x, y - 2]], "black" : [[x, y + 1], [x, y + 2]]}[ chessStorage[[z[1] for z in chessStorage].index(chessPiecePos)][0][:5]]
-            for a in range(2 if twoStepYet else 1):
-                finalList.append(a)
-            
             detectEnemy = {"white" : [[x - 1, y - 1], [x + 1, y - 1]], "black": [[x - 1, y + 1], [x + 1, y + 1]]}[pawnPieceTeam]
+
+            for m in range(2):
+                if detectEnemy[m] in [z[1] for z in chessStorage] and chessStorage[[z[1] for z in chessStorage].index(detectEnemy[m])][0][:5] != self.turn:
+                    finalList.append(detectEnemy[m])
+
+            for a in range(2):
+                if trail[a] not in [z[1] for z in chessStorage] and ((a == 0) or twoStepYet):
+                    finalList.append(trail[a])
+                elif trail[a] in [z[1] for z in chessStorage]:
+                    break
+            
             if detectEnemy in [z[1] for z in chessStorage]:
                 finalList.append(detectEnemy)
 
