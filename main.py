@@ -1,6 +1,8 @@
 #I would want to make 2 modes for the chess placing: click to show location, click available destination to go there, and hold and release onto destination
 #Change of storage: now how it works it that it stores the chess location instead of storing the entier chess board
 
+#accidentally git pulled it oh no
+
 import pygame
 import os
 
@@ -294,7 +296,6 @@ class MovePieces:
                 else:
                     finalList.append(trail[a])
 
-        #PAWN IS UNTESTED. IT IS MOST LIKELY NOT GOING TO WORK. THE REASON I UPLOADED IT HERE IS BECAUSE I RAN OUT OF TIME DOING PAWN
         if chessPieceName == "pawn":
             #pawn is special because it attacks diagonally but it moves 1/2 times forward first time then 1 time forward
             [x, y] = chessPiecePos
