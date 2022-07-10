@@ -73,6 +73,10 @@ class MovePieces:
         self.threatened = None
         self.turn = 'white'
     
+        #indicators for prevMove and currentMove to decrease confusion
+        self.prevMove = None
+        self.currentMove = None
+
         # drag and drop logic
         self.dragModeCoord = None
         self.dragModeName = None
@@ -96,7 +100,14 @@ class MovePieces:
 
             for y in range(8):
                 #draw the table (makes it yellow if its special) (ill change the special conditions later)
-                pygame.draw.rect(screen, (161, 152, 77) if self.samePieceClick == [x, y] else (207, 106, 66) if self.selectedChessPieceLegalMoves != None and [x, y] in self.selectedChessPieceLegalMoves else ((153, 94, 64) if (x * 3 + y) % 2 == 1 else (232, 215, 167)), pygame.Rect(50 + x*80, 50 + y*80, 80, 80)) #chessStorage[[z[1] for z in chessStorage].index([x, y])][0]
+                if self.samePieceClick == [x, y] or (self.dragModeCoord != None and [x, y] == self.dragModeCoord) or self.currentMove == [x, y] or self.prevMove == [x, y]:
+                    highlightColor = ((227, 208, 34) if (x * 3 + y) % 2 != 1 else (204, 187, 31))
+                elif self.selectedChessPieceLegalMoves != None and [x, y] in self.selectedChessPieceLegalMoves:
+                    highlightColor = ((209, 77, 63) if (x * 3 + y) % 2 != 1 else (181, 65, 53))
+                else:
+                    highlightColor = ((153, 94, 64) if (x * 3 + y) % 2 == 1 else (232, 215, 167))
+
+                pygame.draw.rect(screen,highlightColor , pygame.Rect(50 + x*80, 50 + y*80, 80, 80)) #chessStorage[[z[1] for z in chessStorage].index([x, y])][0]
                 # if self.selectedChessPieceLegalMoves != None and [x, y] in self.selectedChessPieceLegalMoves else (166, 129, 88)
 
         for x in chessStorage:
@@ -138,6 +149,8 @@ class MovePieces:
                     self.dragModeName = chessStorage[[z[1] for z in chessStorage].index([x, y])][0]
                     self.dragModeInfo = chessStorage[[z[1] for z in chessStorage].index([x, y])]
 
+                    self.prevMove = self.currentMove = None
+
                     #make the original chess piece invisible
                     if self.samePieceClick == None:
                         chessStorage[[z[1] for z in chessStorage].index(self.dragModeCoord)][2] = False
@@ -155,6 +168,9 @@ class MovePieces:
                         #delete a piece if it overlaps
                         if [x, y] in [z[1] for z in chessStorage] and len(chessStorage[[z[1] for z in chessStorage].index([x, y])]):
                             del chessStorage[[z[1] for z in chessStorage].index([x, y])]
+    
+                        self.currentMove = self.samePieceClick
+                        self.prevMove = [x, y]
 
                         if len(chessStorage[[z[1] for z in chessStorage].index(self.samePieceClick)]) == 4:
                             chessStorage[[z[1] for z in chessStorage].index(self.samePieceClick)][3] = False
@@ -185,6 +201,9 @@ class MovePieces:
             #drag mode stuff
             if None not in [x, y] and [x, y] != self.dragModeCoord != None:
                 if self.selectedChessPieceLegalMoves != None and [x, y] in self.selectedChessPieceLegalMoves:
+                    self.currentMove = self.dragModeCoord
+                    self.prevMove = [x, y]
+
                     #Delete item if it is on top of it
                     if [x, y] in [z[1] for z in chessStorage] and len(chessStorage[[z[1] for z in chessStorage].index([x, y])]):
                         del chessStorage[[z[1] for z in chessStorage].index([x, y])]
